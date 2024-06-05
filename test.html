@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Clock</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            background: url('untitled5.PNG') no-repeat center center fixed;
+            background-size: cover;
+            filter: blur(5px);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+header {
+    background-color: rgba(51, 51, 51, 0.8);
+    color: white;
+    width: 100%;
+    text-align: center;
+    padding: 20px 0; /* Increased padding for a larger header */
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+}
+
+header h1 {
+    font-size: 48px; /* Increased font size for a larger header */
+    margin: 0;
+}
+        main {
+            background: rgba(235, 235, 235, 0.5);
+            padding: 30px;
+            text-align: center;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h1, h2 {
+            color: #333;
+            font-size: 28px;
+            margin: 10px 0;
+        }
+
+        #countdown-display {
+            font-size: 100px;
+            margin: 20px 0;
+            color: #333;
+        }
+
+        .red #countdown-display {
+            color: red;
+        }
+
+input[type="datetime-local"] {
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 16px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    width: calc(100% - 22px);
+    max-width: 300px;
+    background: #fff;
+    color: #333;
+    transition: all 0.3s ease;
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+        input[type="datetime-local"]:focus {
+            border-color: #007BFF;
+            box-shadow: 0 0 5px rgba(0,123,255,0.5);
+            outline: none;
+        }
+
+        button {
+            padding: 12px 24px;
+            margin: 10px 5px;
+            font-size: 18px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            background-color: #6c757d;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #5a6268;
+        }
+
+        footer {
+            background-color: rgba(51, 51, 51, 0.8);
+            color: white;
+            width: 100%;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Countdown Clock</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Countdown Timer</h2>
+            <div id="countdown-display">00:00:00:00</div>
+            <input type="datetime-local" id="datetime-input" step="1">
+            <button onclick="startCountdown()">Start</button>
+            <button id="hold-button" onclick="toggleHold()">Hold</button>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; Entirely Made From ChatGPT (and Ring)</p>
+    </footer>
+
+<script>
+    let countdownInterval;
+    let remainingTime;
+    let isPaused = false;
+    let isCountingUp = false;
+
+    function startCountdown() {
+        clearInterval(countdownInterval);
+        const input = document.getElementById('datetime-input').value;
+        const targetTime = new Date(input).getTime();
+        remainingTime = targetTime - Date.now();
+
+        if (remainingTime > 0) {
+            countdownInterval = setInterval(updateCountdown, 1000);
+            isPaused = false;
+            isCountingUp = false;
+        } else {
+            alert("Please enter a future date and time.");
+        }
+    }
+
+    function toggleHold() {
+        const holdButton = document.getElementById('hold-button');
+        if (isPaused) {
+            countdownInterval = setInterval(updateCountdown, 1000);
+            isPaused = false;
+            document.getElementById('countdown-display').style.color = "#333";
+            holdButton.textContent = "Hold";
+        } else {
+            clearInterval(countdownInterval);
+            isPaused = true;
+            document.getElementById('countdown-display').style.color = "red";
+            holdButton.textContent = "Resume";
+        }
+    }
+
+    function updateCountdown() {
+        if (!isCountingUp) {
+            if (remainingTime >= 0) {
+                const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+                document.getElementById('countdown-display').textContent = formatTime(days, hours, minutes, seconds);
+
+                remainingTime -= 1000;
+            } else {
+                isCountingUp = true;
+                remainingTime = 0;
+            }
+        } else {
+            remainingTime += 1000;
+            const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+            document.getElementById('countdown-display').textContent = formatTime(days, hours, minutes, seconds);
+        }
+    }
+
+    function formatTime(days, hours, minutes, seconds) {
+        return `${padZero(days)}:${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
+    }
+
+    function padZero(num) {
+        return num < 10 ? `0${num}` : num;
+    }
+</script>
